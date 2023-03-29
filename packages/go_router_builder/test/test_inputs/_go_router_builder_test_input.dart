@@ -72,7 +72,7 @@ class MissingPathParam extends GoRouteData {
 }
 
 @ShouldGenerate(r'''
-GoRoute get $enumParam => GoRouteData.$route(
+RouteBase get $enumParam => GoRouteData.$route(
       path: '/:y',
       factory: $EnumParamExtension._fromState,
     );
@@ -121,7 +121,7 @@ enum EnumTest {
 }
 
 @ShouldGenerate(r'''
-GoRoute get $defaultValueRoute => GoRouteData.$route(
+RouteBase get $defaultValueRoute => GoRouteData.$route(
       path: '/default-value-route',
       factory: $DefaultValueRouteExtension._fromState,
     );
@@ -162,7 +162,7 @@ class DefaultValueRoute extends GoRouteData {
 }
 
 @ShouldGenerate(r'''
-GoRoute get $extraValueRoute => GoRouteData.$route(
+RouteBase get $extraValueRoute => GoRouteData.$route(
       path: '/default-value-route',
       factory: $ExtraValueRouteExtension._fromState,
     );
@@ -215,7 +215,7 @@ class NullableDefaultValueRoute extends GoRouteData {
 }
 
 @ShouldGenerate(r'''
-GoRoute get $iterableWithEnumRoute => GoRouteData.$route(
+RouteBase get $iterableWithEnumRoute => GoRouteData.$route(
       path: '/iterable-with-enum',
       factory: $IterableWithEnumRouteExtension._fromState,
     );
@@ -266,4 +266,39 @@ enum EnumOnlyUsedInIterable {
   a,
   b,
   c,
+}
+
+@ShouldGenerate(r'''
+RouteBase get $iterableDefaultValueRoute => GoRouteData.$route(
+      path: '/iterable-default-value-route',
+      factory: $IterableDefaultValueRouteExtension._fromState,
+    );
+
+extension $IterableDefaultValueRouteExtension on IterableDefaultValueRoute {
+  static IterableDefaultValueRoute _fromState(GoRouterState state) =>
+      IterableDefaultValueRoute(
+        param:
+            state.queryParametersAll['param']?.map(int.parse) ?? const <int>[0],
+      );
+
+  String get location => GoRouteData.$location(
+        '/iterable-default-value-route',
+        queryParams: {
+          if (param != const <int>[0])
+            'param': param.map((e) => e.toString()).toList(),
+        },
+      );
+
+  void go(BuildContext context) => context.go(location);
+
+  void push(BuildContext context) => context.push(location);
+
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+}
+''')
+@TypedGoRoute<IterableDefaultValueRoute>(path: '/iterable-default-value-route')
+class IterableDefaultValueRoute extends GoRouteData {
+  IterableDefaultValueRoute({this.param = const <int>[0]});
+  final Iterable<int> param;
 }
