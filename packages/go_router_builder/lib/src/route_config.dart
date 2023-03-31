@@ -69,9 +69,6 @@ class RouteConfig {
   ) {
     assert(!reader.isNull, 'reader should not be null');
     final InterfaceType type = reader.objectValue.type! as InterfaceType;
-    // TODO(stuartmorgan): Remove this ignore once 'analyze' can be set to
-    // 5.2+ (when Flutter 3.4+ is on stable).
-    // ignore: deprecated_member_use
     final bool isShellRoute = type.element.name == 'TypedShellRoute';
 
     String? path;
@@ -96,10 +93,6 @@ class RouteConfig {
       );
     }
 
-    // TODO(kevmoo): validate that this MUST be a subtype of `GoRouteData`
-    // TODO(stuartmorgan): Remove this ignore once 'analyze' can be set to
-    // 5.2+ (when Flutter 3.4+ is on stable).
-    // ignore: deprecated_member_use
     final InterfaceElement classElement = typeParamType.element;
 
     final RouteConfig value = RouteConfig._(
@@ -259,7 +252,7 @@ RouteBase get $_routeGetterName => ${_routeDefinition()};
 
   String get _newFromState {
     final StringBuffer buffer = StringBuffer('=>');
-    if (_ctor.isConst && _ctorParams.isEmpty && _ctorQueryParams.isEmpty) {
+    if (_ctor.isConst && _ctorParams.isEmpty && _ctorQueryParams.isEmpty && _extraParam == null) {
       buffer.writeln('const ');
     }
 
@@ -361,7 +354,7 @@ GoRouteData.\$route(
         );
       }
 
-      if (!_pathParams.contains(element.name)) {
+      if (!_pathParams.contains(element.name) && !element.isExtraField) {
         throw InvalidGenerationSourceError(
           'Missing param `${element.name}` in path.',
           element: element,
@@ -432,21 +425,14 @@ GoRouteData.\$route(
 
   late final List<ParameterElement> _ctorParams =
       _ctor.parameters.where((ParameterElement element) {
-    if (element.isRequired) {
-      if (element.isExtraField) {
-        throw InvalidGenerationSourceError(
-          'Parameters named `$extraFieldName` cannot be required.',
-          element: element,
-        );
-      }
+    if (element.isRequired && !element.isExtraField) {
       return true;
     }
     return false;
   }).toList();
 
   late final List<ParameterElement> _ctorQueryParams = _ctor.parameters
-      .where((ParameterElement element) =>
-          element.isOptional && !element.isExtraField)
+      .where((ParameterElement element) => element.isOptional && !element.isExtraField)
       .toList();
 
   ConstructorElement get _ctor {
@@ -467,17 +453,10 @@ GoRouteData.\$route(
 
 String _enumMapConst(InterfaceType type) {
   assert(type.isEnum);
-
-  // TODO(stuartmorgan): Remove this ignore once 'analyze' can be set to
-  // 5.2+ (when Flutter 3.4+ is on stable).
-  // ignore: deprecated_member_use
   final String enumName = type.element.name;
 
   final StringBuffer buffer = StringBuffer('const ${enumMapName(type)} = {');
 
-  // TODO(stuartmorgan): Remove this ignore once 'analyze' can be set to
-  // 5.2+ (when Flutter 3.4+ is on stable).
-  // ignore: deprecated_member_use
   for (final FieldElement enumField in type.element.fields
       .where((FieldElement element) => element.isEnumConstant)) {
     buffer.writeln(
