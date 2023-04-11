@@ -37,6 +37,7 @@ class InfoIterable extends IterableBase<String> {
 class RouteConfig {
   RouteConfig._(
     this._path,
+    this._name,
     this._routeDataClass,
     this._parent,
     this._key,
@@ -84,6 +85,9 @@ class RouteConfig {
       path = pathValue.stringValue;
     }
 
+    final ConstantReader nameValue = reader.read('name');
+    final String? name = nameValue.isNull ? null : nameValue.stringValue;
+
     final DartType typeParamType = type.typeArguments.single;
     if (typeParamType is! InterfaceType) {
       throw InvalidGenerationSourceError(
@@ -97,6 +101,7 @@ class RouteConfig {
 
     final RouteConfig value = RouteConfig._(
       path ?? '',
+      name,
       classElement,
       parent,
       _decodeKey(classElement),
@@ -111,6 +116,7 @@ class RouteConfig {
 
   final List<RouteConfig> _children = <RouteConfig>[];
   final String _path;
+  final String? _name;
   final InterfaceElement _routeDataClass;
   final RouteConfig? _parent;
   final String? _key;
@@ -252,7 +258,10 @@ RouteBase get $_routeGetterName => ${_routeDefinition()};
 
   String get _newFromState {
     final StringBuffer buffer = StringBuffer('=>');
-    if (_ctor.isConst && _ctorParams.isEmpty && _ctorQueryParams.isEmpty && _extraParam == null) {
+    if (_ctor.isConst &&
+        _ctorParams.isEmpty &&
+        _ctorQueryParams.isEmpty &&
+        _extraParam == null) {
       buffer.writeln('const ');
     }
 
@@ -338,6 +347,7 @@ routes: [${_children.map((RouteConfig e) => '${e._routeDefinition()},').join()}]
     return '''
 GoRouteData.\$route(
       path: ${escapeDartString(_path)},
+      ${_name != null ? 'name: ${escapeDartString(_name!)},' : ''}
       factory: $_extensionName._fromState,
       $navigatorKey
       $routesBit
@@ -432,7 +442,8 @@ GoRouteData.\$route(
   }).toList();
 
   late final List<ParameterElement> _ctorQueryParams = _ctor.parameters
-      .where((ParameterElement element) => element.isOptional && !element.isExtraField)
+      .where((ParameterElement element) =>
+          element.isOptional && !element.isExtraField)
       .toList();
 
   ConstructorElement get _ctor {
