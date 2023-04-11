@@ -253,12 +253,20 @@ class TypedShellRoute<T extends ShellRouteData> extends TypedRoute<T> {
   /// Default const constructor
   const TypedShellRoute({
     this.routes = const <TypedRoute<RouteData>>[],
+    this.name,
   });
 
   /// Child route definitions.
   ///
   /// See [RouteBase.routes].
   final List<TypedRoute<RouteData>> routes;
+
+  /// The name that corresponds to this route.
+  /// 
+  /// See [GoRoute.name].
+  /// 
+  ///
+  final String? name;
 }
 
 /// Internal class used to signal that the default page behavior should be used.
