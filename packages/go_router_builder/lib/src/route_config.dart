@@ -338,7 +338,6 @@ routes: [${_children.map((RouteConfig e) => '${e._routeDefinition()},').join()}]
     if (_isShellRoute) {
       return '''
   ShellRouteData.\$route(
-    ${_name != null ? 'name: ${escapeDartString(_name!)},' : ''}
     factory: $_extensionName._fromState,
     $navigatorKey
     $routesBit
